@@ -8,7 +8,7 @@ Do not edit this mirror by hand. Regenerate it from the private repository with:
 scripts/sync-public-mirror.sh
 ```
 
-Generated from private commit: `3641b3bb687e`
+Generated from private commit: `ca5227c1de88`
 
 ## CI configuration
 
