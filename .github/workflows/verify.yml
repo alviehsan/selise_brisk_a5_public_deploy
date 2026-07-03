@@ -1,0 +1,77 @@
+name: Verify Public Mirror
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Lint, test, and build dev/prod
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Vite env files from GitHub Variables
+        env:
+          VITE_DEV_BLOCKS_API_URL: ${{ vars.VITE_DEV_BLOCKS_API_URL }}
+          VITE_DEV_API_BASE_URL: ${{ vars.VITE_DEV_API_BASE_URL }}
+          VITE_DEV_X_BLOCKS_KEY: ${{ vars.VITE_DEV_X_BLOCKS_KEY }}
+          VITE_DEV_PROJECT_SLUG: ${{ vars.VITE_DEV_PROJECT_SLUG }}
+          VITE_DEV_BLOCKS_OIDC_CLIENT_ID: ${{ vars.VITE_DEV_BLOCKS_OIDC_CLIENT_ID }}
+          VITE_DEV_BLOCKS_OIDC_REDIRECT_URI: ${{ vars.VITE_DEV_BLOCKS_OIDC_REDIRECT_URI }}
+          VITE_PROD_BLOCKS_API_URL: ${{ vars.VITE_PROD_BLOCKS_API_URL }}
+          VITE_PROD_API_BASE_URL: ${{ vars.VITE_PROD_API_BASE_URL }}
+          VITE_PROD_X_BLOCKS_KEY: ${{ vars.VITE_PROD_X_BLOCKS_KEY }}
+          VITE_PROD_PROJECT_SLUG: ${{ vars.VITE_PROD_PROJECT_SLUG }}
+          VITE_PROD_BLOCKS_OIDC_CLIENT_ID: ${{ vars.VITE_PROD_BLOCKS_OIDC_CLIENT_ID }}
+          VITE_PROD_BLOCKS_OIDC_REDIRECT_URI: ${{ vars.VITE_PROD_BLOCKS_OIDC_REDIRECT_URI }}
+        run: |
+          cat > .env.dev <<EOF_DEV
+          VITE_BLOCKS_API_URL=${VITE_DEV_BLOCKS_API_URL}
+          VITE_API_BASE_URL=${VITE_DEV_API_BASE_URL}
+          VITE_X_BLOCKS_KEY=${VITE_DEV_X_BLOCKS_KEY}
+          VITE_CAPTCHA_SITE_KEY=""
+          VITE_CAPTCHA_TYPE=
+          VITE_PROJECT_SLUG=${VITE_DEV_PROJECT_SLUG}
+          VITE_BLOCKS_OIDC_CLIENT_ID=${VITE_DEV_BLOCKS_OIDC_CLIENT_ID}
+          VITE_BLOCKS_OIDC_REDIRECT_URI=${VITE_DEV_BLOCKS_OIDC_REDIRECT_URI}
+          EOF_DEV
+
+          cat > .env.prod <<EOF_PROD
+          VITE_BLOCKS_API_URL=${VITE_PROD_BLOCKS_API_URL}
+          VITE_API_BASE_URL=${VITE_PROD_API_BASE_URL}
+          VITE_X_BLOCKS_KEY=${VITE_PROD_X_BLOCKS_KEY}
+          VITE_CAPTCHA_SITE_KEY=""
+          VITE_CAPTCHA_TYPE=
+          VITE_PROJECT_SLUG=${VITE_PROD_PROJECT_SLUG}
+          VITE_BLOCKS_OIDC_CLIENT_ID=${VITE_PROD_BLOCKS_OIDC_CLIENT_ID}
+          VITE_BLOCKS_OIDC_REDIRECT_URI=${VITE_PROD_BLOCKS_OIDC_REDIRECT_URI}
+          EOF_PROD
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build dev
+        run: npm run build:dev
+
+      - name: Build prod
+        run: npm run build:prod

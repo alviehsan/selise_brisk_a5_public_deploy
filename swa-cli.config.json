@@ -1,0 +1,9 @@
+{
+  "": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "configurations": {
+    "Lamit": {
+      "appDir": "build",
+      "outputLocation": "build"
+    }
+  }
+}
